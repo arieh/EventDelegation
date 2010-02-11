@@ -22,41 +22,46 @@ Element.implement({
 		//get stored delegates
 		var key = type + '-delegates',
 			stored = this.retrieve(key) || false;
-		
 		// if stored delegates; extend with
 		// new delegates and return self.
 		if (stored)
 		{
-			var delegates = $extend(stored, delegates);
-			this.store(key, delegates);			
+			$each(delegates,function(fnc,selector){
+				if (stored[selector]) stored[selector].push(fnc);
+				else stored[selector] = [fnc];
+			});
+			this.store(key, stored);			
 			return this;
 		}
 		else
 		{
-			this.store(key, delegates);
+			stored = {}; 
+			$each(delegates,function(fnc,selector){
+				stored[selector]=[fnc];
+			});
+			this.store(key, stored);
 		}
-	
+		
 		return this.addEvent(type, function(e)
 		{			
 			// Get target and set defaults
 			var target = document.id(e.target),
 				prevent = prevent || true,
-				propagate = propagate || false
-				delegates = this.retrieve(key); 
-	
+				propagate = propagate || false,
+				delegates = this.retrieve(key),
+				args = $A(arguments);
+			
 			// Cycle through rules
-			for (var selector in delegates)
-			{
-				if (target.match(selector))
-				{					
-					// If a rule matches then fiddle with the natural flow as required
+			$each(delegates,function(arr,selector){
+				if (target.match(selector)){
 					if (prevent) e.preventDefault();
 					if (!propagate) e.stopPropagation();
 					
-					// Fire the method up...
-					if (delegates[selector].apply) return delegates[selector].apply(target, $A(arguments));
+					arr.each(function(fnc){
+						if (fnc.apply) return fnc.apply(target, args);
+					});
 				}
-			}
+			});
 		});		
 	}
 });
