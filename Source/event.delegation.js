@@ -78,7 +78,7 @@ Element.implement({
 		var key = type + '-delegates',
 			stored = this.retrieve(key) || false;
 		
-		if (stored && stored[delegated] && stored[delegated].contains(fn)) stored[delegated].erase(fn);
+		if (stored && stored[delegated]) stored[delegated].erase(fn);
 		return this;
 	},
 	'removeDelegatedEvents' : function(type,delegated){
