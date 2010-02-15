@@ -71,5 +71,20 @@ Element.implement({
         {
             this.delegateEvent(key, delegates[key], prevent, propagate);
         }
-    }
+		return this;
+    },
+	
+	'removeDelegatedEvent' : function(type,delegated,fn){
+		var key = type + '-delegates',
+			stored = this.retrieve(key) || false;
+		
+		if (stored && stored[delegated] && stored[delegated].contains(fn)) stored[delegated].erase(fn);
+		return this;
+	},
+	'removeDelegatedEvents' : function(type,delegated){
+		var key = type + '-delegates',
+			stored = this.retrieve(key) || false;
+		if (stored && stored[delegates]) delete stored[delegates];
+		return this;
+	}
 });
