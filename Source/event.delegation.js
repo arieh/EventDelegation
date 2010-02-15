@@ -84,7 +84,7 @@ Element.implement({
 	'removeDelegatedEvents' : function(type,delegated){
 		var key = type + '-delegates',
 			stored = this.retrieve(key) || false;
-		if (stored && stored[delegates]) delete stored[delegates];
+		if (stored && stored[delegated]) delete stored[delegated];
 		return this;
 	}
 });
