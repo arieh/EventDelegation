@@ -6,12 +6,13 @@ license: MIT-style
 
 authors:
 - Christopher Pitt
+- Arieh Glazer
 
 requires:
 - core/1.2.4: Element.Event
 - core/1.2.4: Selectors
 
-provides: [Element.delegateEvent]
+provides: [Element.delegateEvent, Element.delegateEvents, Element.denyEvent, Element.denyEvents]
 
 ...
 */
@@ -25,43 +26,50 @@ Element.implement({
 		// if stored delegates; extend with
 		// new delegates and return self.
 		if (stored)
-		{
-			$each(delegates,function(fnc,selector){
-				if (stored[selector]) stored[selector].push(fnc);
-				else stored[selector] = [fnc];
-			});
-			this.store(key, stored);			
-			return this;
+            Hash.each(delegates, function(fn, selector) {
+                if (stored[selector])
+                {
+                    stored[selector].push(fn);
+                }
+                else
+                {
+                    stored[selector] = [fn];
+                }
+            });
+            
+            return this;
 		}
 		else
 		{
-			stored = {}; 
-			$each(delegates,function(fnc,selector){
-				stored[selector]=[fnc];
-			});
+            stored = new Hash();
+            Hash.each(delegates, function(fn, selector) {
+                stored[selector] = [fn];
+            });
 			this.store(key, stored);
 		}
 		
 		return this.addEvent(type, function(e)
-		{			
+		{
 			// Get target and set defaults
 			var target = document.id(e.target),
 				prevent = prevent || true,
-				propagate = propagate || false,
-				delegates = this.retrieve(key),
-				args = $A(arguments);
-			
+				propagate = propagate || false
+				stored = this.retrieve(key),
+                args = arguments;
+	
 			// Cycle through rules
-			$each(delegates,function(arr,selector){
+            Hash.each(stored, function(delegates, selector){
 				if (target.match(selector)){
 					if (prevent) e.preventDefault();
 					if (!propagate) e.stopPropagation();
-					
-					arr.each(function(fnc){
-						if (fnc.apply) return fnc.apply(target, args);
+ 
+					Array.each(delegates, function(fn) {
+						if (fn.apply) fn.apply(target, args);
 					});
 				}
 			});
+            
+            return this;
 		});		
 	},
     
@@ -71,20 +79,33 @@ Element.implement({
         {
             this.delegateEvent(key, delegates[key], prevent, propagate);
         }
-		return this;
+        
+        return this;
     },
-	
-	'removeDelegatedEvent' : function(type,delegated,fn){
-		var key = type + '-delegates',
-			stored = this.retrieve(key) || false;
-		
-		if (stored && stored[delegated]) stored[delegated].erase(fn);
-		return this;
-	},
-	'removeDelegatedEvents' : function(type,delegated){
-		var key = type + '-delegates',
-			stored = this.retrieve(key) || false;
-		if (stored && stored[delegated]) delete stored[delegated];
-		return this;
-	}
+    
+    'denyEvent': function(type, selector, fn)
+    {
+        var key = type + '-delegates',
+            stored = this.retrieve(key) || false;
+            
+        if (stored && stored[selector])
+        {
+            stored[selector].erase(fn);
+        }
+        
+        return this;
+    },
+    
+    'denyEvents': function(type, selector)
+    {
+        var key = type + '-delegates',
+            stored = this.retrieve(key) || false;
+            
+        if (stored && stored[selector])
+        {
+            delete stored[selector];
+        }
+        
+        return this;
+    }
 });
