@@ -22,10 +22,11 @@ Element.implement({
 	{	
 		//get stored delegates
 		var key = type + '-delegates',
-			stored = this.retrieve(key) || false;
+			stored = this.retrieve(key) || false,
+			parent = this;
 		// if stored delegates; extend with
 		// new delegates and return self.
-		if (stored)
+		if (stored){
             Hash.each(delegates, function(fn, selector) {
                 if (stored[selector])
                 {
@@ -41,7 +42,7 @@ Element.implement({
 		}
 		else
 		{
-            stored = new Hash();
+			stored = new Hash();
             Hash.each(delegates, function(fn, selector) {
                 stored[selector] = [fn];
             });
@@ -59,7 +60,9 @@ Element.implement({
 	
 			// Cycle through rules
             Hash.each(stored, function(delegates, selector){
-				if (target.match(selector)){
+				var matched = parent.getElements(selector);
+				
+				if (matched.contains(target)){
 					if (prevent) e.preventDefault();
 					if (!propagate) e.stopPropagation();
  
@@ -99,8 +102,7 @@ Element.implement({
     'denyEvents': function(type, selector)
     {
         var key = type + '-delegates',
-            stored = this.retrieve(key) || false;
-            
+            stored = this.retrieve(key) || false;    
         if (stored && stored[selector])
         {
             delete stored[selector];
@@ -109,3 +111,7 @@ Element.implement({
         return this;
     }
 });
+
+Element.alias('delegateEvent','relay');
+Element.alias('delegateEvents','relayEvents');
+Element.alias('denyEvent','deny');
