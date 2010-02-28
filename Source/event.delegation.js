@@ -60,6 +60,7 @@ Element.implement({
 			
 			// Cycle through rules
             Hash.each(stored, function(delegates, selector){
+				selector.trim();
 				var match = selector.test(/[+>\s]/) 
 							? parent.getElements(selector).contains(target)
 							: target.match(selector);
