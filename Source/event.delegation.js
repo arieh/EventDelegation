@@ -57,12 +57,14 @@ Element.implement({
 				propagate = propagate || false
 				stored = this.retrieve(key),
                 args = arguments;
-	
+			
 			// Cycle through rules
             Hash.each(stored, function(delegates, selector){
-				var matched = parent.getElements(selector);
+				var match = selector.test(/[+>\s]/) 
+							? parent.getElements(selector).contains(target)
+							: target.match(selector);
 				
-				if (matched.contains(target)){
+				if (match){
 					if (prevent) e.preventDefault();
 					if (!propagate) e.stopPropagation();
  
